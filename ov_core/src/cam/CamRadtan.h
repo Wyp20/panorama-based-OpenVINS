@@ -126,18 +126,21 @@ public:
    * @return 2d vector of raw uv coordinate
    */
   Eigen::Vector2f distort_f(const Eigen::Vector3f &uv_norm) override {
+    float z_n = uv_norm(2);
+    Eigen::Vector3f norm = uv_norm / z_n;
+
 
     // Get our camera parameters
     Eigen::MatrixXd cam_d = camera_values;
 
     // Calculate distorted coordinates for radial
-    double r = std::sqrt(uv_norm(0) * uv_norm(0) + uv_norm(1) * uv_norm(1));
+    double r = std::sqrt(norm(0) * norm(0) + norm(1) * norm(1));
     double r_2 = r * r;
     double r_4 = r_2 * r_2;
-    double x1 = uv_norm(0) * (1 + cam_d(4) * r_2 + cam_d(5) * r_4) + 2 * cam_d(6) * uv_norm(0) * uv_norm(1) +
-                cam_d(7) * (r_2 + 2 * uv_norm(0) * uv_norm(0));
-    double y1 = uv_norm(1) * (1 + cam_d(4) * r_2 + cam_d(5) * r_4) + cam_d(6) * (r_2 + 2 * uv_norm(1) * uv_norm(1)) +
-                2 * cam_d(7) * uv_norm(0) * uv_norm(1);
+    double x1 = norm(0) * (1 + cam_d(4) * r_2 + cam_d(5) * r_4) + 2 * cam_d(6) * norm(0) * norm(1) +
+                cam_d(7) * (r_2 + 2 * norm(0) * norm(0));
+    double y1 = norm(1) * (1 + cam_d(4) * r_2 + cam_d(5) * r_4) + cam_d(6) * (r_2 + 2 * norm(1) * norm(1)) +
+                2 * cam_d(7) * norm(0) * norm(1);
 
     // Return the distorted point
     Eigen::Vector2f uv_dist;
@@ -153,22 +156,24 @@ public:
    * @param H_dz_dzeta Derivative of measurement z in respect to intrinic parameters
    */
   void compute_distort_jacobian(const Eigen::Vector3d &uv_norm, Eigen::MatrixXd &H_dz_dzn, Eigen::MatrixXd &H_dz_dzeta) override {
+    float z_n = uv_norm(2);
+    Eigen::Vector3d norm = uv_norm / z_n;
 
     // Get our camera parameters
     Eigen::MatrixXd cam_d = camera_values;
 
     // Calculate distorted coordinates for radial
-    double r = std::sqrt(uv_norm(0) * uv_norm(0) + uv_norm(1) * uv_norm(1));
+    double r = std::sqrt(norm(0) * norm(0) + norm(1) * norm(1));
     double r_2 = r * r;
     double r_4 = r_2 * r_2;
 
     // Jacobian of distorted pixel to normalized pixel
     H_dz_dzn = Eigen::MatrixXd::Zero(2, 2);
-    double x = uv_norm(0);
-    double y = uv_norm(1);
-    double x_2 = uv_norm(0) * uv_norm(0);
-    double y_2 = uv_norm(1) * uv_norm(1);
-    double x_y = uv_norm(0) * uv_norm(1);
+    double x = norm(0);
+    double y = norm(1);
+    double x_2 = norm(0) * norm(0);
+    double y_2 = norm(1) * norm(1);
+    double x_y = norm(0) * norm(1);
     H_dz_dzn(0, 0) = cam_d(0) * ((1 + cam_d(4) * r_2 + cam_d(5) * r_4) + (2 * cam_d(4) * x_2 + 4 * cam_d(5) * x_2 * r_2) +
                                  2 * cam_d(6) * y + (2 * cam_d(7) * x + 4 * cam_d(7) * x));
     H_dz_dzn(0, 1) = cam_d(0) * (2 * cam_d(4) * x_y + 4 * cam_d(5) * x_y * r_2 + 2 * cam_d(6) * x + 2 * cam_d(7) * y);
@@ -177,25 +182,25 @@ public:
                                  2 * cam_d(7) * x + (2 * cam_d(6) * y + 4 * cam_d(6) * y));
 
     // Calculate distorted coordinates for radtan
-    double x1 = uv_norm(0) * (1 + cam_d(4) * r_2 + cam_d(5) * r_4) + 2 * cam_d(6) * uv_norm(0) * uv_norm(1) +
-                cam_d(7) * (r_2 + 2 * uv_norm(0) * uv_norm(0));
-    double y1 = uv_norm(1) * (1 + cam_d(4) * r_2 + cam_d(5) * r_4) + cam_d(6) * (r_2 + 2 * uv_norm(1) * uv_norm(1)) +
-                2 * cam_d(7) * uv_norm(0) * uv_norm(1);
+    double x1 = norm(0) * (1 + cam_d(4) * r_2 + cam_d(5) * r_4) + 2 * cam_d(6) * norm(0) * norm(1) +
+                cam_d(7) * (r_2 + 2 * norm(0) * norm(0));
+    double y1 = norm(1) * (1 + cam_d(4) * r_2 + cam_d(5) * r_4) + cam_d(6) * (r_2 + 2 * norm(1) * norm(1)) +
+                2 * cam_d(7) * norm(0) * norm(1);
 
     // Compute the Jacobian in respect to the intrinsics
     H_dz_dzeta = Eigen::MatrixXd::Zero(2, 8);
     H_dz_dzeta(0, 0) = x1;
     H_dz_dzeta(0, 2) = 1;
-    H_dz_dzeta(0, 4) = cam_d(0) * uv_norm(0) * r_2;
-    H_dz_dzeta(0, 5) = cam_d(0) * uv_norm(0) * r_4;
-    H_dz_dzeta(0, 6) = 2 * cam_d(0) * uv_norm(0) * uv_norm(1);
-    H_dz_dzeta(0, 7) = cam_d(0) * (r_2 + 2 * uv_norm(0) * uv_norm(0));
+    H_dz_dzeta(0, 4) = cam_d(0) * norm(0) * r_2;
+    H_dz_dzeta(0, 5) = cam_d(0) * norm(0) * r_4;
+    H_dz_dzeta(0, 6) = 2 * cam_d(0) * norm(0) * norm(1);
+    H_dz_dzeta(0, 7) = cam_d(0) * (r_2 + 2 * norm(0) * norm(0));
     H_dz_dzeta(1, 1) = y1;
     H_dz_dzeta(1, 3) = 1;
-    H_dz_dzeta(1, 4) = cam_d(1) * uv_norm(1) * r_2;
-    H_dz_dzeta(1, 5) = cam_d(1) * uv_norm(1) * r_4;
-    H_dz_dzeta(1, 6) = cam_d(1) * (r_2 + 2 * uv_norm(1) * uv_norm(1));
-    H_dz_dzeta(1, 7) = 2 * cam_d(1) * uv_norm(0) * uv_norm(1);
+    H_dz_dzeta(1, 4) = cam_d(1) * norm(1) * r_2;
+    H_dz_dzeta(1, 5) = cam_d(1) * norm(1) * r_4;
+    H_dz_dzeta(1, 6) = cam_d(1) * (r_2 + 2 * norm(1) * norm(1));
+    H_dz_dzeta(1, 7) = 2 * cam_d(1) * norm(0) * norm(1);
   }
 };
 

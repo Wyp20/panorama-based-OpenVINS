@@ -335,8 +335,9 @@ void UpdaterHelper::get_feature_jacobian_full(std::shared_ptr<State> state, Upda
 
       // Project the current feature into the current frame of reference
       Eigen::Vector3d p_FinCi = R_ItoC * p_FinIi + p_IinC;
-      Eigen::Vector3d uv_norm;
-      uv_norm << p_FinCi(0) / p_FinCi(2), p_FinCi(1) / p_FinCi(2),1.;
+      Eigen::Vector3d uv_norm = p_FinCi;
+      // Eigen::Vector3d uv_norm;
+      // uv_norm << p_FinCi(0) / p_FinCi(2), p_FinCi(1) / p_FinCi(2),1.;
 
       // Distort the normalized coordinates (radtan or fisheye)
       Eigen::Vector2d uv_dist;

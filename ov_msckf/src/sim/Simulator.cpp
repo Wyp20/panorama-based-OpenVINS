@@ -441,8 +441,9 @@ std::vector<std::pair<size_t, Eigen::VectorXf>> Simulator::project_pointcloud(co
       continue;
 
     // Project to normalized coordinates
-    Eigen::Vector3f uv_norm;
-    uv_norm << (float)(p_FinC(0) / p_FinC(2)), (float)(p_FinC(1) / p_FinC(2)),1.;
+    Eigen::Vector3f uv_norm = p_FinC.cast<float>();
+    // Eigen::Vector3f uv_norm;
+    // uv_norm << (float)(p_FinC(0) / p_FinC(2)), (float)(p_FinC(1) / p_FinC(2)),1.;
 
     // Distort the normalized coordinates
     Eigen::Vector2f uv_dist;

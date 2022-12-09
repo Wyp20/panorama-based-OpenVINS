@@ -62,8 +62,9 @@ bool Factor_ImageReprojCalib::Evaluate(double const *const *parameters, double *
   Eigen::Vector3d p_FinCi = R_ItoC * p_FinIi + p_IinC;
 
   // Normalized projected feature bearing
-  Eigen::Vector3d uv_norm;
-  uv_norm << p_FinCi(0) / p_FinCi(2), p_FinCi(1) / p_FinCi(2),1.;
+  Eigen::Vector3d uv_norm = p_FinCi;
+  // Eigen::Vector3d uv_norm;
+  // uv_norm << p_FinCi(0) / p_FinCi(2), p_FinCi(1) / p_FinCi(2),1.;
 
   // Square-root information and gate
   Eigen::Matrix<double, 2, 2> sqrtQ_gate = gate * sqrtQ;

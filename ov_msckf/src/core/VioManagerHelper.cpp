@@ -354,8 +354,8 @@ void VioManager::retriangulate_active_tracks(const ov_core::CameraData &message)
     if (feat_uvs_in_cam0.find(feat.first) != feat_uvs_in_cam0.end()) {
       uv_dist << (double)feat_uvs_in_cam0.at(feat.first).x, (double)feat_uvs_in_cam0.at(feat.first).y;
     } else {
-      Eigen::Vector3d uv_norm;
-      uv_norm << p_FinCi(0) / depth, p_FinCi(1) / depth,1.;
+      Eigen::Vector3d uv_norm = p_FinCi;
+      // uv_norm << p_FinCi(0) / depth, p_FinCi(1) / depth,1.;
       uv_dist = state->_cam_intrinsics_cameras.at(0)->distort_d(uv_norm);
     }
 
