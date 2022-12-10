@@ -136,6 +136,8 @@ public:
    */
   Eigen::Vector2f distort_f(const Eigen::Vector3f &uv_norm) override {
     float z_n = uv_norm(2);
+    if(z_n < 0.1)
+      return Eigen::Vector2f(-1,-1);
     Eigen::Vector3f norm = uv_norm / z_n;
 
 

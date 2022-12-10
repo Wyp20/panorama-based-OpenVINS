@@ -437,7 +437,8 @@ std::vector<std::pair<size_t, Eigen::VectorXf>> Simulator::project_pointcloud(co
     Eigen::Vector3d p_FinC = R_ItoC * p_FinI + p_IinC;
 
     // Skip cloud if too far away
-    if (p_FinC(2) > params.sim_max_feature_gen_distance || p_FinC(2) < 0.1)
+    double p_f_norm = p_FinC.norm();
+    if (p_f_norm > params.sim_max_feature_gen_distance || p_f_norm < params.sim_min_feature_gen_distance)
       continue;
 
     // Project to normalized coordinates

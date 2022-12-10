@@ -100,8 +100,9 @@ bool FeatureInitializer::single_triangulation(std::shared_ptr<Feature> feat,
 
   // If we have a bad condition number, or it is too close
   // Then set the flag for bad (i.e. set z-axis to nan)
-  if (std::abs(condA) > _options.max_cond_number || p_f(2, 0) < _options.min_dist || p_f(2, 0) > _options.max_dist ||
-      std::isnan(p_f.norm())) {
+  double p_f_norm = p_f.norm();
+  if (std::abs(condA) > _options.max_cond_number || p_f_norm < _options.min_dist || p_f_norm > _options.max_dist ||
+      std::isnan(p_f_norm)) {
     return false;
   }
 
@@ -184,7 +185,8 @@ bool FeatureInitializer::single_triangulation_1d(std::shared_ptr<Feature> feat,
   Eigen::MatrixXd p_f = depth * bearing_inA;
 
   // Then set the flag for bad (i.e. set z-axis to nan)
-  if (p_f(2, 0) < _options.min_dist || p_f(2, 0) > _options.max_dist || std::isnan(p_f.norm())) {
+  double p_f_norm = p_f.norm();
+  if (p_f_norm < _options.min_dist || p_f_norm > _options.max_dist || std::isnan(p_f_norm)) {
     return false;
   }
 
@@ -365,8 +367,9 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
   // 1. If the feature is too close
   // 2. If the feature is invalid
   // 3. If the baseline ratio is large
-  if (feat->p_FinA(2) < _options.min_dist || feat->p_FinA(2) > _options.max_dist ||
-      (feat->p_FinA.norm() / base_line_max) > _options.max_baseline || std::isnan(feat->p_FinA.norm())) {
+  double p_f_norm = feat->p_FinA.norm();
+  if (p_f_norm < _options.min_dist || p_f_norm > _options.max_dist ||
+      (p_f_norm / base_line_max) > _options.max_baseline || std::isnan(p_f_norm)) {
     return false;
   }
 

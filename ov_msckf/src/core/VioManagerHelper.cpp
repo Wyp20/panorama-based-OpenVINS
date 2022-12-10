@@ -287,8 +287,9 @@ void VioManager::retriangulate_active_tracks(const ov_core::CameraData &message)
 
         // If we have a bad condition number, or it is too close
         // Then set the flag for bad (i.e. set z-axis to nan)
-        if (std::abs(condA) <= params.featinit_options.max_cond_number && p_FinCi(2, 0) >= params.featinit_options.min_dist &&
-            p_FinCi(2, 0) <= params.featinit_options.max_dist && !std::isnan(p_FinCi.norm())) {
+        double p_f_norm = p_FinCi.norm();
+        if (std::abs(condA) <= params.featinit_options.max_cond_number && p_f_norm >= params.featinit_options.min_dist &&
+            p_f_norm <= params.featinit_options.max_dist && !std::isnan(p_f_norm)) {
           active_tracks_posinG_new[featid] = p_FinG;
         }
       }
