@@ -28,16 +28,19 @@
 using namespace ov_core;
 
 bool FeatureInitializer::single_triangulation(std::shared_ptr<Feature> feat,
-                                              std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM) {
+                                              std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM)
+{
 
   // Total number of measurements
   // Also set the first measurement to be the anchor frame
   int total_meas = 0;
   size_t anchor_most_meas = 0;
   size_t most_meas = 0;
-  for (auto const &pair : feat->timestamps) {
+  for (auto const &pair : feat->timestamps)
+  {
     total_meas += (int)pair.second.size();
-    if (pair.second.size() > most_meas) {
+    if (pair.second.size() > most_meas)
+    {
       anchor_most_meas = pair.first;
       most_meas = pair.second.size();
     }
@@ -55,10 +58,12 @@ bool FeatureInitializer::single_triangulation(std::shared_ptr<Feature> feat,
   const Eigen::Matrix<double, 3, 1> &p_AinG = anchorclone.pos();
 
   // Loop through each camera for this feature
-  for (auto const &pair : feat->timestamps) {
+  for (auto const &pair : feat->timestamps)
+  {
 
     // Add CAM_I features
-    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++) {
+    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+    {
 
       // Get the position of this clone in the global
       const Eigen::Matrix<double, 3, 3> &R_GtoCi = clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).Rot();
@@ -102,7 +107,8 @@ bool FeatureInitializer::single_triangulation(std::shared_ptr<Feature> feat,
   // Then set the flag for bad (i.e. set z-axis to nan)
   double p_f_norm = p_f.norm();
   if (std::abs(condA) > _options.max_cond_number || p_f_norm < _options.min_dist || p_f_norm > _options.max_dist ||
-      std::isnan(p_f_norm)) {
+      std::isnan(p_f_norm))
+  {
     return false;
   }
 
@@ -113,16 +119,19 @@ bool FeatureInitializer::single_triangulation(std::shared_ptr<Feature> feat,
 }
 
 bool FeatureInitializer::single_triangulation_1d(std::shared_ptr<Feature> feat,
-                                                 std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM) {
+                                                 std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM)
+{
 
   // Total number of measurements
   // Also set the first measurement to be the anchor frame
   int total_meas = 0;
   size_t anchor_most_meas = 0;
   size_t most_meas = 0;
-  for (auto const &pair : feat->timestamps) {
+  for (auto const &pair : feat->timestamps)
+  {
     total_meas += (int)pair.second.size();
-    if (pair.second.size() > most_meas) {
+    if (pair.second.size() > most_meas)
+    {
       anchor_most_meas = pair.first;
       most_meas = pair.second.size();
     }
@@ -147,10 +156,12 @@ bool FeatureInitializer::single_triangulation_1d(std::shared_ptr<Feature> feat,
   bearing_inA = bearing_inA / bearing_inA.norm();
 
   // Loop through each camera for this feature
-  for (auto const &pair : feat->timestamps) {
+  for (auto const &pair : feat->timestamps)
+  {
 
     // Add CAM_I features
-    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++) {
+    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+    {
 
       // Skip the anchor bearing
       if ((int)pair.first == feat->anchor_cam_id && m == idx_anchor_bearing)
@@ -168,7 +179,7 @@ bool FeatureInitializer::single_triangulation_1d(std::shared_ptr<Feature> feat,
 
       // Get the UV coordinate normal
       Eigen::Matrix<double, 3, 1> b_i;
-      b_i << feat->uvs_norm.at(pair.first).at(m)(0), feat->uvs_norm.at(pair.first).at(m)(1),  feat->uvs_norm.at(pair.first).at(m)(2);
+      b_i << feat->uvs_norm.at(pair.first).at(m)(0), feat->uvs_norm.at(pair.first).at(m)(1), feat->uvs_norm.at(pair.first).at(m)(2);
       b_i = R_AtoCi.transpose() * b_i;
       b_i = b_i / b_i.norm();
       Eigen::Matrix3d Bperp = skew_x(b_i);
@@ -186,7 +197,8 @@ bool FeatureInitializer::single_triangulation_1d(std::shared_ptr<Feature> feat,
 
   // Then set the flag for bad (i.e. set z-axis to nan)
   double p_f_norm = p_f.norm();
-  if (p_f_norm < _options.min_dist || p_f_norm > _options.max_dist || std::isnan(p_f_norm)) {
+  if (p_f_norm < _options.min_dist || p_f_norm > _options.max_dist || std::isnan(p_f_norm))
+  {
     return false;
   }
 
@@ -197,7 +209,8 @@ bool FeatureInitializer::single_triangulation_1d(std::shared_ptr<Feature> feat,
 }
 
 bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
-                                            std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM) {
+                                            std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM)
+{
 
   // Get into inverse depth
   double rho = 1 / feat->p_FinA(2);
@@ -225,10 +238,12 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
   // 1. Reached our max iteration count
   // 2. System is unstable
   // 3. System has converged
-  while (runs < _options.max_runs && lam < _options.max_lamda && eps > _options.min_dx) {
+  while (runs < _options.max_runs && lam < _options.max_lamda && eps > _options.min_dx)
+  {
 
     // Triggers a recomputation of jacobians/information/gradients
-    if (recompute) {
+    if (recompute)
+    {
 
       Hess.setZero();
       grad.setZero();
@@ -236,10 +251,12 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
       double err = 0;
 
       // Loop through each camera for this feature
-      for (auto const &pair : feat->timestamps) {
+      for (auto const &pair : feat->timestamps)
+      {
 
         // Add CAM_I features
-        for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++) {
+        for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+        {
 
           //=====================================================================================
           //=====================================================================================
@@ -269,20 +286,21 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
           double d_z2_d_alpha = (R_AtoCi(1, 0) * hi3 - hi2 * R_AtoCi(2, 0)) / (pow(hi3, 2));
           double d_z2_d_beta = (R_AtoCi(1, 1) * hi3 - hi2 * R_AtoCi(2, 1)) / (pow(hi3, 2));
           double d_z2_d_rho = (p_AinCi(1, 0) * hi3 - hi2 * p_AinCi(2, 0)) / (pow(hi3, 2));
+
           Eigen::Matrix<double, 2, 3> H;
           H << d_z1_d_alpha, d_z1_d_beta, d_z1_d_rho, d_z2_d_alpha, d_z2_d_beta, d_z2_d_rho;
+
           // Calculate residual
-          Eigen::Matrix<float, 2, 1> z;
+          Eigen::Matrix<double, 2, 1> z;
           z << hi1 / hi3, hi2 / hi3;
-          Eigen::VectorXf tmp = feat->uvs_norm.at(pair.first).at(m);
-          Eigen::Matrix<float, 2, 1> res = tmp - z;
+          Eigen::Matrix<double, 2, 1> res = feat->uvs_norm.at(pair.first).at(m).topRows(2).cast<double>() - z;
 
           //=====================================================================================
           //=====================================================================================
 
           // Append to our summation variables
           err += std::pow(res.norm(), 2);
-          grad.noalias() += H.transpose() * res.cast<double>();
+          grad.noalias() += H.transpose() * res;
           Hess.noalias() += H.transpose() * H;
         }
       }
@@ -290,7 +308,8 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
 
     // Solve Levenberg iteration
     Eigen::Matrix<double, 3, 3> Hess_l = Hess;
-    for (size_t r = 0; r < (size_t)Hess.rows(); r++) {
+    for (size_t r = 0; r < (size_t)Hess.rows(); r++)
+    {
       Hess_l(r, r) *= (1.0 + lam);
     }
 
@@ -306,7 +325,8 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
     // PRINT_DEBUG(ss.str().c_str());
 
     // Check if converged
-    if (cost <= cost_old && (cost_old - cost) / cost_old < _options.min_dcost) {
+    if (cost <= cost_old && (cost_old - cost) / cost_old < _options.min_dcost)
+    {
       alpha += dx(0, 0);
       beta += dx(1, 0);
       rho += dx(2, 0);
@@ -316,7 +336,8 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
 
     // If cost is lowered, accept step
     // Else inflate lambda (try to make more stable)
-    if (cost <= cost_old) {
+    if (cost <= cost_old)
+    {
       recompute = true;
       cost_old = cost;
       alpha += dx(0, 0);
@@ -325,7 +346,9 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
       runs++;
       lam = lam / _options.lam_mult;
       eps = dx.norm();
-    } else {
+    }
+    else
+    {
       recompute = false;
       lam = lam * _options.lam_mult;
       continue;
@@ -346,9 +369,11 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
 
   // Check maximum baseline
   // Loop through each camera for this feature
-  for (auto const &pair : feat->timestamps) {
+  for (auto const &pair : feat->timestamps)
+  {
     // Loop through the other clones to see what the max baseline is
-    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++) {
+    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+    {
       // Get the position of this clone in the global
       const Eigen::Matrix<double, 3, 1> &p_CiinG = clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).pos();
       // Convert current position relative to anchor
@@ -369,7 +394,8 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
   // 3. If the baseline ratio is large
   double p_f_norm = feat->p_FinA.norm();
   if (p_f_norm < _options.min_dist || p_f_norm > _options.max_dist ||
-      (p_f_norm / base_line_max) > _options.max_baseline || std::isnan(p_f_norm)) {
+      (p_f_norm / base_line_max) > _options.max_baseline || std::isnan(p_f_norm))
+  {
     return false;
   }
 
@@ -379,7 +405,8 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
 }
 
 double FeatureInitializer::compute_error(std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM,
-                                         std::shared_ptr<Feature> feat, double alpha, double beta, double rho) {
+                                         std::shared_ptr<Feature> feat, double alpha, double beta, double rho)
+{
 
   // Total error
   double err = 0;
@@ -389,9 +416,11 @@ double FeatureInitializer::compute_error(std::unordered_map<size_t, std::unorder
   const Eigen::Matrix<double, 3, 1> &p_AinG = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).pos();
 
   // Loop through each camera for this feature
-  for (auto const &pair : feat->timestamps) {
+  for (auto const &pair : feat->timestamps)
+  {
     // Add CAM_I features
-    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++) {
+    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+    {
 
       //=====================================================================================
       //=====================================================================================
@@ -415,11 +444,272 @@ double FeatureInitializer::compute_error(std::unordered_map<size_t, std::unorder
       double hi2 = R_AtoCi(1, 0) * alpha + R_AtoCi(1, 1) * beta + R_AtoCi(1, 2) + rho * p_AinCi(1, 0);
       double hi3 = R_AtoCi(2, 0) * alpha + R_AtoCi(2, 1) * beta + R_AtoCi(2, 2) + rho * p_AinCi(2, 0);
       // Calculate residual
-      Eigen::Matrix<float, 2, 1> z;
+      Eigen::Matrix<double, 2, 1> z;
       z << hi1 / hi3, hi2 / hi3;
-      Eigen::VectorXf tmp = feat->uvs_norm.at(pair.first).at(m);
-      Eigen::Matrix<float, 2, 1> res = tmp - z;
+      Eigen::Matrix<double, 2, 1> res = feat->uvs_norm.at(pair.first).at(m).topRows(2).cast<double>() - z;
       // std::cout << res.transpose() << "=" <<tmp.transpose() << "-" << z.transpose() << std::endl;
+      // Append to our summation variables
+      err += pow(res.norm(), 2);
+    }
+  }
+
+  return err;
+}
+
+bool FeatureInitializer::single_gaussnewton_xyz(std::shared_ptr<Feature> feat,
+                                                std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM)
+{
+
+  // Get into inverse depth
+  double X = feat->p_FinA(0);
+  double Y = feat->p_FinA(1);
+  double Z = feat->p_FinA(2);
+
+  // Optimization parameters
+  double lam = _options.init_lamda;
+  double eps = 10000;
+  int runs = 0;
+
+  // Variables used in the optimization
+  bool recompute = true;
+  Eigen::Matrix<double, 3, 3> Hess = Eigen::Matrix<double, 3, 3>::Zero();
+  Eigen::Matrix<double, 3, 1> grad = Eigen::Matrix<double, 3, 1>::Zero();
+
+  // Cost at the last iteration
+  double cost_old = compute_error_xyz(clonesCAM, feat, X, Y, Z);
+
+  // Get the position of the anchor pose
+  const Eigen::Matrix<double, 3, 3> &R_GtoA = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).Rot();
+  const Eigen::Matrix<double, 3, 1> &p_AinG = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).pos();
+
+  // Loop till we have either
+  // 1. Reached our max iteration count
+  // 2. System is unstable
+  // 3. System has converged
+  while (runs < _options.max_runs && lam < _options.max_lamda && eps > _options.min_dx)
+  {
+
+    // Triggers a recomputation of jacobians/information/gradients
+    if (recompute)
+    {
+
+      Hess.setZero();
+      grad.setZero();
+
+      double err = 0;
+
+      // Loop through each camera for this feature
+      for (auto const &pair : feat->timestamps)
+      {
+
+        // Add CAM_I features
+        for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+        {
+
+          //=====================================================================================
+          //=====================================================================================
+
+          // Get the position of this clone in the global
+          const Eigen::Matrix<double, 3, 3> &R_GtoCi = clonesCAM.at(pair.first).at(feat->timestamps[pair.first].at(m)).Rot();
+          const Eigen::Matrix<double, 3, 1> &p_CiinG = clonesCAM.at(pair.first).at(feat->timestamps[pair.first].at(m)).pos();
+          // Convert current position relative to anchor
+          Eigen::Matrix<double, 3, 3> R_AtoCi;
+          R_AtoCi.noalias() = R_GtoCi * R_GtoA.transpose();
+          Eigen::Matrix<double, 3, 1> p_CiinA;
+          p_CiinA.noalias() = R_GtoA * (p_CiinG - p_AinG);
+          Eigen::Matrix<double, 3, 1> p_AinCi;
+          p_AinCi.noalias() = -R_AtoCi * p_CiinA;
+
+          //=====================================================================================
+          /*
+
+          p_FinCami = R_AnchortoCami * p_FinAnchor + p_AnchorinCami;
+
+          \begin{array}{l}
+          \left(\begin{array}{ccc}
+          \frac{\sigma_2 -{{\left(\bar{x} \right)}}^2 }{\sigma_1 } & -\frac{\bar{x} \,\bar{y} }{\sigma_1 } & -\frac{\bar{x} \,\bar{z} }{\sigma_1 }\\
+          -\frac{\bar{x} \,\bar{y} }{\sigma_1 } & \frac{\sigma_2 -{{\left(\bar{y} \right)}}^2 }{\sigma_1 } & -\frac{\bar{y} \,\bar{z} }{\sigma_1 }\\
+          -\frac{\bar{x} \,\bar{z} }{\sigma_1 } & -\frac{\bar{y} \,\bar{z} }{\sigma_1 } & \frac{\sigma_2 -{{\left(\bar{z} \right)}}^2 }{\sigma_1 }
+          \end{array}\right)\\
+          \mathrm{}\\
+          \textrm{where}\\
+          \mathrm{}\\
+          \;\;\sigma_1 ={{\left(\bar{\sqrt{x^2 +y^2 +z^2 }} \right)}}^3 \\
+          \mathrm{}\\
+          \;\;\sigma_2 ={{\left(\bar{\sqrt{x^2 +y^2 +z^2 }} \right)}}^2
+          \end{array}
+
+          */
+
+          Eigen::Matrix<double, 3, 1> p_FinCami = R_AtoCi * feat->p_FinA + p_AinCi;
+          double norm = p_FinCami.norm();
+          Eigen::Matrix<double, 3, 3> H;
+          {
+            double s_1 = std::pow(norm, 3), s_2 = std::pow(norm, 2);
+            double x = p_FinCami(0), y = p_FinCami(1), z = p_FinCami(2);
+            H << x * x - s_2, x * y, x * z, x * y, y * y - s_2, y * z, x * z, y * z, z * z - s_2;
+            H = H * -1 / s_1;
+            H = H * R_AtoCi;
+          }
+          Eigen::Matrix<double, 3, 1> z = p_FinCami / norm;
+          Eigen::Matrix<double, 3, 1> res = feat->uvs_norm.at(pair.first).at(m).normalized().cast<double>() - z;
+
+          //=====================================================================================
+          //=====================================================================================
+
+          // Append to our summation variables
+          err += std::pow(res.norm(), 2);
+          grad.noalias() += H.transpose() * res;
+          Hess.noalias() += H.transpose() * H;
+        }
+      }
+    }
+
+    // Solve Levenberg iteration
+    Eigen::Matrix<double, 3, 3> Hess_l = Hess;
+    for (size_t r = 0; r < (size_t)Hess.rows(); r++)
+    {
+      Hess_l(r, r) *= (1.0 + lam);
+    }
+
+    Eigen::Matrix<double, 3, 1> dx = Hess_l.colPivHouseholderQr().solve(grad);
+    // Eigen::Matrix<double,3,1> dx = (Hess+lam*Eigen::MatrixXd::Identity(Hess.rows(), Hess.rows())).colPivHouseholderQr().solve(grad);
+
+    // Check if error has gone down
+    double cost = compute_error_xyz(clonesCAM, feat, X + dx(0, 0), Y + dx(1, 0), Z + dx(2, 0));
+
+    // Debug print
+    std::stringstream ss;
+    // ss << "run = " << runs << " | cost = " << dx.norm() << " | lamda = " << lam << " | depth = " << 1/rho << endl;
+    ss << "run = " << runs << " | cost = " << cost <<" | |dx| = " << dx.norm() << " | lamda = " << lam << std::endl;
+    PRINT_DEBUG(ss.str().c_str());
+
+    // Check if converged
+    if (cost <= cost_old && (cost_old - cost) / cost_old < _options.min_dcost)
+    {
+      X += dx(0, 0);
+      Y += dx(1, 0);
+      Z += dx(2, 0);
+      eps = 0;
+      break;
+    }
+
+    // If cost is lowered, accept step
+    // Else inflate lambda (try to make more stable)
+    if (cost <= cost_old)
+    {
+      recompute = true;
+      cost_old = cost;
+      X += dx(0, 0);
+      Y += dx(1, 0);
+      Z += dx(2, 0);
+      runs++;
+      lam = lam / _options.lam_mult;
+      eps = dx.norm();
+    }
+    else
+    {
+      recompute = false;
+      lam = lam * _options.lam_mult;
+      continue;
+    }
+  }
+
+  // Revert to standard, and set to all
+  feat->p_FinA(0) = X;
+  feat->p_FinA(1) = Y;
+  feat->p_FinA(2) = Z;
+
+  // Get tangent plane to x_hat
+  Eigen::HouseholderQR<Eigen::MatrixXd> qr(feat->p_FinA);
+  Eigen::MatrixXd Q = qr.householderQ();
+
+  // Max baseline we have between poses
+  double base_line_max = 0.0;
+
+  // Check maximum baseline
+  // Loop through each camera for this feature
+  for (auto const &pair : feat->timestamps)
+  {
+    // Loop through the other clones to see what the max baseline is
+    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+    {
+      // Get the position of this clone in the global
+      const Eigen::Matrix<double, 3, 1> &p_CiinG = clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).pos();
+      // Convert current position relative to anchor
+      Eigen::Matrix<double, 3, 1> p_CiinA = R_GtoA * (p_CiinG - p_AinG);
+      // Dot product camera pose and nullspace
+      double base_line = ((Q.block(0, 1, 3, 2)).transpose() * p_CiinA).norm();
+      if (base_line > base_line_max)
+        base_line_max = base_line;
+    }
+  }
+  // std::stringstream ss;
+  // ss << feat->featid << " - max base " << (feat->p_FinA.norm() / base_line_max) << " - z " << feat->p_FinA(2) << std::endl;
+  // PRINT_DEBUG(ss.str().c_str());
+
+  // Check if this feature is bad or not
+  // 1. If the feature is too close
+  // 2. If the feature is invalid
+  // 3. If the baseline ratio is large
+  double p_f_norm = feat->p_FinA.norm();
+  if (p_f_norm < _options.min_dist || p_f_norm > _options.max_dist ||
+      (p_f_norm / base_line_max) > _options.max_baseline || std::isnan(p_f_norm))
+  {
+    return false;
+  }
+
+  // Finally get position in global frame
+  feat->p_FinG = R_GtoA.transpose() * feat->p_FinA + p_AinG;
+  return true;
+}
+
+double FeatureInitializer::compute_error_xyz(std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM,
+                                             std::shared_ptr<Feature> feat, double X, double Y, double Z)
+{
+
+  // Total error
+  double err = 0;
+
+  // Get the position of the anchor pose
+  const Eigen::Matrix<double, 3, 3> &R_GtoA = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).Rot();
+  const Eigen::Matrix<double, 3, 1> &p_AinG = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).pos();
+
+  // Loop through each camera for this feature
+  for (auto const &pair : feat->timestamps)
+  {
+    // Add CAM_I features
+    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+    {
+
+      //=====================================================================================
+      //=====================================================================================
+
+      // Get the position of this clone in the global
+      const Eigen::Matrix<double, 3, 3> &R_GtoCi = clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).Rot();
+      const Eigen::Matrix<double, 3, 1> &p_CiinG = clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).pos();
+      // Convert current position relative to anchor
+      Eigen::Matrix<double, 3, 3> R_AtoCi;
+      R_AtoCi.noalias() = R_GtoCi * R_GtoA.transpose();
+      Eigen::Matrix<double, 3, 1> p_CiinA;
+      p_CiinA.noalias() = R_GtoA * (p_CiinG - p_AinG);
+      Eigen::Matrix<double, 3, 1> p_AinCi;
+      p_AinCi.noalias() = -R_AtoCi * p_CiinA;
+
+      //=====================================================================================
+      //=====================================================================================
+      Eigen::Matrix<double, 3, 1> p_FinCami(X,Y,Z);
+      double norm = p_FinCami.norm();
+      Eigen::Matrix<double, 3, 3> H;
+      {
+        double s_1 = std::pow(norm, 3), s_2 = std::pow(norm, 2);
+        double x = p_FinCami(0), y = p_FinCami(1), z = p_FinCami(2);
+        H << x * x - s_2, x * y, x * z, x * y, y * y - s_2, y * z, x * z, y * z, z * z - s_2;
+        H = H * -1 / s_1;
+        H = H * R_AtoCi;
+      }
+      Eigen::Matrix<double, 3, 1> z = p_FinCami / norm;
+      Eigen::Matrix<double, 3, 1> res = feat->uvs_norm.at(pair.first).at(m).normalized().cast<double>() - z;
       // Append to our summation variables
       err += pow(res.norm(), 2);
     }

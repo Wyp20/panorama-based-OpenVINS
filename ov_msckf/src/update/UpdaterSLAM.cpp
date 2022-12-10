@@ -132,7 +132,10 @@ void UpdaterSLAM::delayed_init(std::shared_ptr<State> state, std::vector<std::sh
     // Gauss-newton refine the feature
     bool success_refine = true;
     if (initializer_feat->config().refine_features) {
+      if(initializer_feat->config().refine_1d)
       success_refine = initializer_feat->single_gaussnewton(*it1, clones_cam);
+      else
+      success_refine = initializer_feat->single_gaussnewton_xyz(*it1, clones_cam);
     }
 
     // Remove the feature if not a success

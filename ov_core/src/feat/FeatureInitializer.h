@@ -120,7 +120,7 @@ public:
    * @return Returns false if it fails to be optimize (based on the thresholds)
    */
   bool single_gaussnewton(std::shared_ptr<Feature> feat, std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM);
-
+  bool single_gaussnewton_xyz(std::shared_ptr<Feature> feat, std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM);
   /**
    * @brief Gets the current configuration of the feature initializer
    * @return Const feature initializer config
@@ -140,6 +140,8 @@ protected:
    * @param rho 1/z inverse depth
    */
   double compute_error(std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM, std::shared_ptr<Feature> feat,
+                       double alpha, double beta, double rho);
+  double compute_error_xyz(std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM, std::shared_ptr<Feature> feat,
                        double alpha, double beta, double rho);
 };
 

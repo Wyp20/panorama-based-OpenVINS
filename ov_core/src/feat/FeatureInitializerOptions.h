@@ -38,6 +38,9 @@ struct FeatureInitializerOptions {
   /// If we should perform Levenberg-Marquardt refinment
   bool refine_features = true;
 
+  /// If we should perform refinment with 1d instead of 3d
+  bool refine_1d = true;
+
   /// Max runs for Levenberg-Marquardt
   int max_runs = 5;
 
@@ -73,6 +76,7 @@ struct FeatureInitializerOptions {
     if (parser != nullptr) {
       parser->parse_config("fi_triangulate_1d", triangulate_1d, false);
       parser->parse_config("fi_refine_features", refine_features, false);
+      parser->parse_config("fi_refine_1d", refine_1d, false);
       parser->parse_config("fi_max_runs", max_runs, false);
       parser->parse_config("fi_init_lamda", init_lamda, false);
       parser->parse_config("fi_max_lamda", max_lamda, false);
@@ -86,6 +90,7 @@ struct FeatureInitializerOptions {
     }
     PRINT_DEBUG("\t- triangulate_1d: %d\n", triangulate_1d);
     PRINT_DEBUG("\t- refine_features: %d\n", refine_features);
+    PRINT_DEBUG("\t- refine_1d: %d\n", refine_1d);
     PRINT_DEBUG("\t- max_runs: %d\n", max_runs);
     PRINT_DEBUG("\t- init_lamda: %.3f\n", init_lamda);
     PRINT_DEBUG("\t- max_lamda: %.3f\n", max_lamda);
