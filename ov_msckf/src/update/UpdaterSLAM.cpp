@@ -278,6 +278,7 @@ void UpdaterSLAM::update(std::shared_ptr<State> state, std::vector<std::shared_p
 
     // Count how many measurements
     int ct_meas = 0;
+    // Loop through each of the cameras we have
     for (const auto &pair : (*it0)->timestamps) {
       ct_meas += (*it0)->timestamps[pair.first].size();
     }
