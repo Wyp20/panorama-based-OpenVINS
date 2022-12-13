@@ -169,9 +169,10 @@ public:
    * @param H_dz_dzn Derivative of measurement z in respect to normalized
    * @param H_dz_dzeta Derivative of measurement z in respect to intrinic parameters
    */
-  void compute_distort_jacobian(const Eigen::Vector3d &uv_norm, Eigen::MatrixXd &H_dz_dzn, Eigen::MatrixXd &H_dz_dzeta) override {
-    float z_n = uv_norm(2);
-    Eigen::Vector3d norm = uv_norm / z_n;
+  
+  void compute_distort_jacobian(const Eigen::Vector3d &p_FinCi, Eigen::MatrixXd &H_dz_dpfc, Eigen::MatrixXd &H_dz_dzeta) override {
+    float z_n = p_FinCi(2);
+    Eigen::Vector3d norm = p_FinCi / z_n;
 
     // Get our camera parameters
     Eigen::MatrixXd cam_d = camera_values;
@@ -214,8 +215,14 @@ public:
     double dth_dr = 1 / (r * r + 1);
 
     // Total Jacobian wrt normalized pixel coordinates
-    H_dz_dzn = Eigen::MatrixXd::Zero(2, 2);
+    Eigen::MatrixXd H_dz_dzn = Eigen::MatrixXd::Zero(2, 2);
     H_dz_dzn = duv_dxy * (dxy_dxyn + (dxy_dr + dxy_dthd * dthd_dth * dth_dr) * dr_dxyn);
+
+    // Normalized coordinates in respect to projection function
+    Eigen::MatrixXd dzn_dpfc = Eigen::MatrixXd::Zero(2, 3);
+    dzn_dpfc << 1 / p_FinCi(2), 0, -p_FinCi(0) / (p_FinCi(2) * p_FinCi(2)), 0, 1 / p_FinCi(2), -p_FinCi(1) / (p_FinCi(2) * p_FinCi(2));
+
+    H_dz_dpfc = H_dz_dzn * dzn_dpfc;
 
     // Calculate distorted coordinates for fisheye
     double x1 = norm(0) * cdist;

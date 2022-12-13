@@ -157,7 +157,7 @@ public:
    * @param H_dz_dzn Derivative of measurement z in respect to normalized
    * @param H_dz_dzeta Derivative of measurement z in respect to intrinic parameters
    */
-  virtual void compute_distort_jacobian(const Eigen::Vector3d &uv_norm, Eigen::MatrixXd &H_dz_dzn, Eigen::MatrixXd &H_dz_dzeta) = 0;
+  virtual void compute_distort_jacobian(const Eigen::Vector3d &p_FinCi, Eigen::MatrixXd &H_dz_dpfc, Eigen::MatrixXd &H_dz_dzeta) = 0;
 
   /// Gets the complete intrinsic vector
   Eigen::MatrixXd get_value() { return camera_values; }

@@ -62,7 +62,7 @@ bool Factor_ImageReprojCalib::Evaluate(double const *const *parameters, double *
   Eigen::Vector3d p_FinCi = R_ItoC * p_FinIi + p_IinC;
 
   // Normalized projected feature bearing
-  Eigen::Vector3d uv_norm = p_FinCi;
+  // Eigen::Vector3d uv_norm = p_FinCi;
   // Eigen::Vector3d uv_norm;
   // uv_norm << p_FinCi(0) / p_FinCi(2), p_FinCi(1) / p_FinCi(2),1.;
 
@@ -72,23 +72,24 @@ bool Factor_ImageReprojCalib::Evaluate(double const *const *parameters, double *
   // Get the distorted raw image coordinate using the camera model
   // Also if jacobians are requested, then compute derivatives
   Eigen::Vector2d uv_dist;
-  Eigen::MatrixXd H_dz_dzn, H_dz_dzeta;
+  // Eigen::MatrixXd H_dz_dzn, H_dz_dzeta;
+  Eigen::MatrixXd H_dz_dpfc, H_dz_dzeta;
   if (is_fisheye) {
     ov_core::CamEqui cam(0, 0);
     cam.set_value(camera_vals);
-    uv_dist = cam.distort_d(uv_norm);
+    uv_dist = cam.distort_d(p_FinCi);
     if (jacobians) {
-      cam.compute_distort_jacobian(uv_norm, H_dz_dzn, H_dz_dzeta);
-      H_dz_dzn = sqrtQ_gate * H_dz_dzn;
+      cam.compute_distort_jacobian(p_FinCi, H_dz_dpfc, H_dz_dzeta);
+      H_dz_dpfc = sqrtQ_gate * H_dz_dpfc;
       H_dz_dzeta = sqrtQ_gate * H_dz_dzeta;
     }
   } else {
     ov_core::CamRadtan cam(0, 0);
     cam.set_value(camera_vals);
-    uv_dist = cam.distort_d(uv_norm);
+    uv_dist = cam.distort_d(p_FinCi);
     if (jacobians) {
-      cam.compute_distort_jacobian(uv_norm, H_dz_dzn, H_dz_dzeta);
-      H_dz_dzn = sqrtQ_gate * H_dz_dzn;
+      cam.compute_distort_jacobian(p_FinCi, H_dz_dpfc, H_dz_dzeta);
+      H_dz_dpfc = sqrtQ_gate * H_dz_dpfc;
       H_dz_dzeta = sqrtQ_gate * H_dz_dzeta;
     }
   }
@@ -107,9 +108,9 @@ bool Factor_ImageReprojCalib::Evaluate(double const *const *parameters, double *
   if (jacobians) {
 
     // Normalized coordinates in respect to projection function
-    Eigen::MatrixXd H_dzn_dpfc = Eigen::MatrixXd::Zero(2, 3);
-    H_dzn_dpfc << 1.0 / p_FinCi(2), 0, -p_FinCi(0) / std::pow(p_FinCi(2), 2), 0, 1.0 / p_FinCi(2), -p_FinCi(1) / std::pow(p_FinCi(2), 2);
-    Eigen::MatrixXd H_dz_dpfc = H_dz_dzn * H_dzn_dpfc;
+    // Eigen::MatrixXd H_dzn_dpfc = Eigen::MatrixXd::Zero(2, 3);
+    // H_dzn_dpfc << 1.0 / p_FinCi(2), 0, -p_FinCi(0) / std::pow(p_FinCi(2), 2), 0, 1.0 / p_FinCi(2), -p_FinCi(1) / std::pow(p_FinCi(2), 2);
+    // Eigen::MatrixXd H_dz_dpfc = H_dz_dzn * H_dzn_dpfc;
 
     // Jacobian wrt q_GtoIi
     if (jacobians[0]) {

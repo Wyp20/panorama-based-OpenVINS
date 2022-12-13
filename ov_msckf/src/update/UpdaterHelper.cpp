@@ -335,13 +335,13 @@ void UpdaterHelper::get_feature_jacobian_full(std::shared_ptr<State> state, Upda
 
       // Project the current feature into the current frame of reference
       Eigen::Vector3d p_FinCi = R_ItoC * p_FinIi + p_IinC;
-      Eigen::Vector3d uv_norm = p_FinCi;
+      // Eigen::Vector3d uv_norm = p_FinCi;
       // Eigen::Vector3d uv_norm;
       // uv_norm << p_FinCi(0) / p_FinCi(2), p_FinCi(1) / p_FinCi(2),1.;
 
       // Distort the normalized coordinates (radtan or fisheye)
       Eigen::Vector2d uv_dist;
-      uv_dist = state->_cam_intrinsics_cameras.at(pair.first)->distort_d(uv_norm);
+      uv_dist = state->_cam_intrinsics_cameras.at(pair.first)->distort_d(p_FinCi);
 
       // Our residual
       Eigen::Vector2d uv_m;
@@ -364,12 +364,13 @@ void UpdaterHelper::get_feature_jacobian_full(std::shared_ptr<State> state, Upda
       }
 
       // Compute Jacobians in respect to normalized image coordinates and possibly the camera intrinsics
-      Eigen::MatrixXd dz_dzn, dz_dzeta;
-      state->_cam_intrinsics_cameras.at(pair.first)->compute_distort_jacobian(uv_norm, dz_dzn, dz_dzeta);
+      // Eigen::MatrixXd dz_dzn, dz_dzeta;
+      Eigen::MatrixXd dz_dpfc, dz_dzeta;
+      state->_cam_intrinsics_cameras.at(pair.first)->compute_distort_jacobian(p_FinCi, dz_dpfc, dz_dzeta);
 
       // Normalized coordinates in respect to projection function
-      Eigen::MatrixXd dzn_dpfc = Eigen::MatrixXd::Zero(2, 3);
-      dzn_dpfc << 1 / p_FinCi(2), 0, -p_FinCi(0) / (p_FinCi(2) * p_FinCi(2)), 0, 1 / p_FinCi(2), -p_FinCi(1) / (p_FinCi(2) * p_FinCi(2));
+      // Eigen::MatrixXd dzn_dpfc = Eigen::MatrixXd::Zero(2, 3);
+      // dzn_dpfc << 1 / p_FinCi(2), 0, -p_FinCi(0) / (p_FinCi(2) * p_FinCi(2)), 0, 1 / p_FinCi(2), -p_FinCi(1) / (p_FinCi(2) * p_FinCi(2));
 
       // Derivative of p_FinCi in respect to p_FinIi
       Eigen::MatrixXd dpfc_dpfg = R_ItoC * R_GtoIi;
@@ -383,7 +384,7 @@ void UpdaterHelper::get_feature_jacobian_full(std::shared_ptr<State> state, Upda
       //=========================================================================
 
       // Precompute some matrices
-      Eigen::MatrixXd dz_dpfc = dz_dzn * dzn_dpfc;
+      // Eigen::MatrixXd dz_dpfc = dz_dzn * dzn_dpfc;
       Eigen::MatrixXd dz_dpfg = dz_dpfc * dpfc_dpfg;
 
       // CHAINRULE: get the total feature Jacobian

@@ -157,9 +157,9 @@ public:
    * @param H_dz_dzn Derivative of measurement z in respect to normalized
    * @param H_dz_dzeta Derivative of measurement z in respect to intrinic parameters
    */
-  void compute_distort_jacobian(const Eigen::Vector3d &uv_norm, Eigen::MatrixXd &H_dz_dzn, Eigen::MatrixXd &H_dz_dzeta) override {
-    float z_n = uv_norm(2);
-    Eigen::Vector3d norm = uv_norm / z_n;
+  void compute_distort_jacobian(const Eigen::Vector3d &p_FinCi, Eigen::MatrixXd &H_dz_dpfc, Eigen::MatrixXd &H_dz_dzeta) override {
+    float z_n = p_FinCi(2);
+    Eigen::Vector3d norm = p_FinCi / z_n;
 
     // Get our camera parameters
     Eigen::MatrixXd cam_d = camera_values;
@@ -170,7 +170,7 @@ public:
     double r_4 = r_2 * r_2;
 
     // Jacobian of distorted pixel to normalized pixel
-    H_dz_dzn = Eigen::MatrixXd::Zero(2, 2);
+    Eigen::MatrixXd H_dz_dzn = Eigen::MatrixXd::Zero(2, 2);
     double x = norm(0);
     double y = norm(1);
     double x_2 = norm(0) * norm(0);
@@ -182,6 +182,12 @@ public:
     H_dz_dzn(1, 0) = cam_d(1) * (2 * cam_d(4) * x_y + 4 * cam_d(5) * x_y * r_2 + 2 * cam_d(6) * x + 2 * cam_d(7) * y);
     H_dz_dzn(1, 1) = cam_d(1) * ((1 + cam_d(4) * r_2 + cam_d(5) * r_4) + (2 * cam_d(4) * y_2 + 4 * cam_d(5) * y_2 * r_2) +
                                  2 * cam_d(7) * x + (2 * cam_d(6) * y + 4 * cam_d(6) * y));
+
+    // Normalized coordinates in respect to projection function
+    Eigen::MatrixXd dzn_dpfc = Eigen::MatrixXd::Zero(2, 3);
+    dzn_dpfc << 1 / p_FinCi(2), 0, -p_FinCi(0) / (p_FinCi(2) * p_FinCi(2)), 0, 1 / p_FinCi(2), -p_FinCi(1) / (p_FinCi(2) * p_FinCi(2));
+
+    H_dz_dpfc = H_dz_dzn * dzn_dpfc;
 
     // Calculate distorted coordinates for radtan
     double x1 = norm(0) * (1 + cam_d(4) * r_2 + cam_d(5) * r_4) + 2 * cam_d(6) * norm(0) * norm(1) +
