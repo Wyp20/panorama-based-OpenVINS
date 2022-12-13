@@ -350,7 +350,7 @@ void VioManager::retriangulate_active_tracks(const ov_core::CameraData &message)
     // Project SLAM feature and non-cam0 features into the current frame of reference
     Eigen::Vector3d p_FinIi = R_GtoIi * (feat.second - p_IiinG);
     Eigen::Vector3d p_FinCi = R_ItoC * p_FinIi + p_IinC;
-    double depth = p_FinCi.norm();
+    double depth = p_FinCi(2);
     Eigen::Vector2d uv_dist;
     if (feat_uvs_in_cam0.find(feat.first) != feat_uvs_in_cam0.end()) {
       uv_dist << (double)feat_uvs_in_cam0.at(feat.first).x, (double)feat_uvs_in_cam0.at(feat.first).y;
@@ -361,9 +361,9 @@ void VioManager::retriangulate_active_tracks(const ov_core::CameraData &message)
     }
 
     // Skip if not valid (i.e. negative depth, or outside of image)
-    // if (depth < 0.1) {
-    //   continue;
-    // }
+    if (depth < 0.1) {
+      continue;
+    }
 
     // Skip if not valid (i.e. negative depth, or outside of image)
     int width = state->_cam_intrinsics_cameras.at(0)->w();

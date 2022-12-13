@@ -86,9 +86,8 @@
         <!-- tracker/extractor properties -->
         <param name="num_pts"                type="int"    value="$(arg num_pts)" />
         <!-- feature init -->
-        <param name="fi_triangulate_1d"      type="bool"   value="true" />
         <param name="fi_refine_features"     type="bool"   value="false" />
-        <param name="fi_refine_1d"           type="bool"   value="false" />
+        <param name="fi_triangulate_1d"      type="bool"   value="true" />
 
     </node>
 
