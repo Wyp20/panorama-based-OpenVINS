@@ -43,6 +43,11 @@ class CamBase {
 
 public:
   /**
+   * @brief Desired camera model.
+   */
+  enum DistortionModel { EQUADISTANT, PLUMB_BOB, EQUIRECTANGLAR };
+
+  /**
    * @brief Default constructor
    * @param width Width of the camera (raw pixels)
    * @param height Height of the camera (raw pixels)

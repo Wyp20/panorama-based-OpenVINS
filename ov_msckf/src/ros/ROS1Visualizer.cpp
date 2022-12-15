@@ -830,11 +830,23 @@ void ROS1Visualizer::publish_loopclosure_information() {
     pub_loop_extrinsic.publish(odometry_calib);
 
     // PUBLISH CAMERA0 INTRINSICS
-    bool is_fisheye = (std::dynamic_pointer_cast<ov_core::CamEqui>(_app->get_params().camera_intrinsics.at(0)) != nullptr);
+    // bool is_fisheye = (std::dynamic_pointer_cast<ov_core::CamEqui>(_app->get_params().camera_intrinsics.at(0)) != nullptr);
     sensor_msgs::CameraInfo cameraparams;
     cameraparams.header = header;
     cameraparams.header.frame_id = "cam0";
-    cameraparams.distortion_model = is_fisheye ? "equidistant" : "plumb_bob";
+    // cameraparams.distortion_model = is_fisheye ? "equidistant" : "plumb_bob";
+    switch (_app->get_params().camera_models.at(0))
+    {
+    case ov_core::CamBase::EQUADISTANT:
+      cameraparams.distortion_model = "equidistant";
+      break;
+    case ov_core::CamBase::PLUMB_BOB:
+      cameraparams.distortion_model = "plumb_bob";
+      break;
+    case ov_core::CamBase::EQUIRECTANGLAR:
+      cameraparams.distortion_model = "equirectangle";
+      break;
+    }
     Eigen::VectorXd cparams = _app->get_state()->_cam_intrinsics.at(0)->value();
     cameraparams.D = {cparams(4), cparams(5), cparams(6), cparams(7)};
     cameraparams.K = {cparams(0), 0, cparams(2), 0, cparams(1), cparams(3), 0, 0, 1};

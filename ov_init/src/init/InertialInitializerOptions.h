@@ -30,6 +30,7 @@
 
 #include "cam/CamEqui.h"
 #include "cam/CamRadtan.h"
+#include "cam/CamPano.h"
 #include "feat/FeatureInitializerOptions.h"
 #include "track/TrackBase.h"
 #include "utils/colors.h"
@@ -236,6 +237,9 @@ struct InertialInitializerOptions {
   /// Number of distinct cameras that we will observe features in
   int num_cameras = 1;
 
+  ov_core::CamBase::DistortionModel dist_model = ov_core::CamBase::DistortionModel::EQUADISTANT;
+  std::map<size_t, ov_core::CamBase::DistortionModel> camera_models;
+
   /// If we should process two cameras are being stereo or binocular. If binocular, we do monocular feature tracking on each image.
   bool use_stereo = true;
 
@@ -258,6 +262,7 @@ struct InertialInitializerOptions {
    * @param parser If not null, this parser will be used to load our parameters
    */
   void print_and_load_state(const std::shared_ptr<ov_core::YamlParser> &parser = nullptr) {
+    std::string dist_model_str = "radtan";
     if (parser != nullptr) {
       parser->parse_config("gravity_mag", gravity_mag);
       parser->parse_config("max_cameras", num_cameras); // might be redundant
@@ -270,10 +275,6 @@ struct InertialInitializerOptions {
         if (i == 0) {
           parser->parse_external("relative_config_imucam", "cam" + std::to_string(i), "timeshift_cam_imu", calib_camimu_dt, false);
         }
-
-        // Distortion model
-        std::string dist_model = "radtan";
-        parser->parse_external("relative_config_imucam", "cam" + std::to_string(i), "distortion_model", dist_model);
 
         // Distortion parameters
         std::vector<double> cam_calib1 = {1, 1, 0, 0};
@@ -303,14 +304,35 @@ struct InertialInitializerOptions {
         cam_eigen.block(0, 0, 4, 1) = ov_core::rot_2_quat(T_CtoI.block(0, 0, 3, 3).transpose());
         cam_eigen.block(4, 0, 3, 1) = -T_CtoI.block(0, 0, 3, 3).transpose() * T_CtoI.block(0, 3, 3, 1);
 
+        // Distortion model
+        parser->parse_external("relative_config_imucam", "cam" + std::to_string(i), "distortion_model", dist_model_str);
+        
         // Create intrinsics model
-        if (dist_model == "equidistant") {
+        if (dist_model_str == "equidistant") {
+          dist_model = ov_core::CamBase::DistortionModel::EQUADISTANT;
           camera_intrinsics.insert({i, std::make_shared<ov_core::CamEqui>(matrix_wh.at(0), matrix_wh.at(1))});
-          camera_intrinsics.at(i)->set_value(cam_calib);
-        } else {
+        } else if (dist_model_str == "radtan") {
+          dist_model = ov_core::CamBase::DistortionModel::PLUMB_BOB;
           camera_intrinsics.insert({i, std::make_shared<ov_core::CamRadtan>(matrix_wh.at(0), matrix_wh.at(1))});
-          camera_intrinsics.at(i)->set_value(cam_calib);
+        } else if (dist_model_str == "equirectangle") {
+          dist_model = ov_core::CamBase::DistortionModel::EQUIRECTANGLAR;
+          camera_intrinsics.insert({i, std::make_shared<ov_core::CamPano>(matrix_wh.at(0), matrix_wh.at(1))});
+        } else {
+          printf(RED "VioManager(): invalid distortion model specified:\n" RESET);
+          printf(RED "\t- EQUADISTANT\n" RESET);
+          printf(RED "\t- PLUMB_BOB\n" RESET);
+          printf(RED "\t- EQUIRECTANGLAR\n" RESET);
+          std::exit(EXIT_FAILURE);
         }
+        // if (dist_model == "equidistant") {
+        //   camera_intrinsics.insert({i, std::make_shared<ov_core::CamEqui>(matrix_wh.at(0), matrix_wh.at(1))});
+        //   camera_intrinsics.at(i)->set_value(cam_calib);
+        // } else {
+        //   camera_intrinsics.insert({i, std::make_shared<ov_core::CamRadtan>(matrix_wh.at(0), matrix_wh.at(1))});
+        //   camera_intrinsics.at(i)->set_value(cam_calib);
+        // }
+        camera_models.insert({i,dist_model});
+        camera_intrinsics.at(i)->set_value(cam_calib);
         camera_extrinsics.insert({i, cam_eigen});
       }
     }
@@ -329,7 +351,7 @@ struct InertialInitializerOptions {
     PRINT_DEBUG("  - calib_camimu_dt: %.4f\n", calib_camimu_dt);
     for (int n = 0; n < num_cameras; n++) {
       std::stringstream ss;
-      ss << "cam_" << n << "_fisheye:" << (std::dynamic_pointer_cast<ov_core::CamEqui>(camera_intrinsics.at(n)) != nullptr) << std::endl;
+      ss << "cam_" << n << "_model:" << dist_model_str << std::endl;
       ss << "cam_" << n << "_wh:" << std::endl << camera_intrinsics.at(n)->w() << " x " << camera_intrinsics.at(n)->h() << std::endl;
       ss << "cam_" << n << "_intrinsic(0:3):" << std::endl
          << camera_intrinsics.at(n)->get_value().block(0, 0, 4, 1).transpose() << std::endl;

@@ -48,14 +48,27 @@ SimulatorInit::SimulatorInit(InertialInitializerOptions &params_) {
   this->params = params_;
   params.camera_intrinsics.clear();
   for (auto const &tmp : params_.camera_intrinsics) {
-    auto tmp_cast = std::dynamic_pointer_cast<ov_core::CamEqui>(tmp.second);
-    if (tmp_cast != nullptr) {
+    switch (params_.camera_models.at(tmp.first))
+    {
+    case ov_core::CamBase::EQUADISTANT:
       params.camera_intrinsics.insert({tmp.first, std::make_shared<ov_core::CamEqui>(tmp.second->w(), tmp.second->h())});
-      params.camera_intrinsics.at(tmp.first)->set_value(params_.camera_intrinsics.at(tmp.first)->get_value());
-    } else {
+      break;
+    case ov_core::CamBase::PLUMB_BOB:
       params.camera_intrinsics.insert({tmp.first, std::make_shared<ov_core::CamRadtan>(tmp.second->w(), tmp.second->h())});
-      params.camera_intrinsics.at(tmp.first)->set_value(params_.camera_intrinsics.at(tmp.first)->get_value());
+      break;
+    case ov_core::CamBase::EQUIRECTANGLAR:
+      params.camera_intrinsics.insert({tmp.first, std::make_shared<ov_core::CamPano>(tmp.second->w(), tmp.second->h())});
+      break;
     }
+    params.camera_intrinsics.at(tmp.first)->set_value(params_.camera_intrinsics.at(tmp.first)->get_value());
+    // auto tmp_cast = std::dynamic_pointer_cast<ov_core::CamEqui>(tmp.second);
+    // if (tmp_cast != nullptr) {
+    //   params.camera_intrinsics.insert({tmp.first, std::make_shared<ov_core::CamEqui>(tmp.second->w(), tmp.second->h())});
+      
+    // } else {
+    //   params.camera_intrinsics.insert({tmp.first, std::make_shared<ov_core::CamRadtan>(tmp.second->w(), tmp.second->h())});
+    //   params.camera_intrinsics.at(tmp.first)->set_value(params_.camera_intrinsics.at(tmp.first)->get_value());
+    // }
   }
 
   // Load the groundtruth trajectory and its spline
