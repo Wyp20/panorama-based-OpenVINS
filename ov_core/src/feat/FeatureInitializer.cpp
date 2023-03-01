@@ -152,7 +152,8 @@ bool FeatureInitializer::single_triangulation_1d(std::shared_ptr<Feature> feat,
   // Get bearing in anchor frame
   Eigen::Matrix<double, 3, 1> bearing_inA;
   bearing_inA << feat->uvs_norm.at(feat->anchor_cam_id).at(idx_anchor_bearing)(0),
-      feat->uvs_norm.at(feat->anchor_cam_id).at(idx_anchor_bearing)(1), feat->uvs_norm.at(feat->anchor_cam_id).at(idx_anchor_bearing)(2);
+      feat->uvs_norm.at(feat->anchor_cam_id).at(idx_anchor_bearing)(1),
+      feat->uvs_norm.at(feat->anchor_cam_id).at(idx_anchor_bearing)(2);
   bearing_inA = bearing_inA / bearing_inA.norm();
 
   // Loop through each camera for this feature
@@ -581,7 +582,7 @@ bool FeatureInitializer::single_gaussnewton_xyz(std::shared_ptr<Feature> feat,
     // Debug print
     std::stringstream ss;
     // ss << "run = " << runs << " | cost = " << dx.norm() << " | lamda = " << lam << " | depth = " << 1/rho << endl;
-    ss << "run = " << runs << " | cost = " << cost <<" | |dx| = " << dx.norm() << " | lamda = " << lam << std::endl;
+    ss << "run = " << runs << " | cost = " << cost << " | |dx| = " << dx.norm() << " | lamda = " << lam << std::endl;
     PRINT_DEBUG(ss.str().c_str());
 
     // Check if converged
@@ -698,7 +699,7 @@ double FeatureInitializer::compute_error_xyz(std::unordered_map<size_t, std::uno
 
       //=====================================================================================
       //=====================================================================================
-      Eigen::Matrix<double, 3, 1> p_FinCami(X,Y,Z);
+      Eigen::Matrix<double, 3, 1> p_FinCami(X, Y, Z);
       double norm = p_FinCami.norm();
       Eigen::Matrix<double, 3, 3> H;
       {

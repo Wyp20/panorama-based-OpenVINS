@@ -357,7 +357,7 @@ bool DynamicInitializer::initialize(double &timestamp, Eigen::MatrixXd &covarian
         // p_FinCi = R_C0toCi * R_ItoC * (p_FinI0 - p_IiinI0) + p_IinC
         //         = R_C0toCi * R_ItoC * (p_FinI0 - v_I0inI0 * dt - 0.5 * grav_inI0 * dt^2 - alpha) + p_IinC
         Eigen::MatrixXd H_proj = Eigen::MatrixXd::Zero(2, 3);
-        H_proj << 1, 0, -uv_norm(0), 0, 1, -uv_norm(1);
+        H_proj << uv_norm(2), 0, -uv_norm(0), 0, uv_norm(2), -uv_norm(1);
         Eigen::MatrixXd H = Eigen::MatrixXd::Zero(2, system_size);
         if (size_feature == 1) {
           assert(false);
@@ -537,15 +537,16 @@ bool DynamicInitializer::initialize(double &timestamp, Eigen::MatrixXd &covarian
     } else {
       p_FinI0 = x_hat.block(size_feature * A_index_features.at(feat.first) + 6, 0, 3, 1);
     }
+    // 全景相机不可避免的
     bool is_behind = false;
-    for (auto const &camtime : feat.second->timestamps) {
-      size_t cam_id = camtime.first;
-      Eigen::Vector4d q_ItoC = params.camera_extrinsics.at(cam_id).block(0, 0, 4, 1);
-      Eigen::Vector3d p_FinC0 = quat_2_Rot(q_ItoC) * p_FinI0;
-      if (p_FinC0(2) < 0) {
-        is_behind = true;
-      }
-    }
+    // for (auto const &camtime : feat.second->timestamps) {
+    //   size_t cam_id = camtime.first;
+    //   Eigen::Vector4d q_ItoC = params.camera_extrinsics.at(cam_id).block(0, 0, 4, 1);
+    //   Eigen::Vector3d p_FinC0 = quat_2_Rot(q_ItoC) * p_FinI0;
+    //   if (p_FinC0(2) < 0) {
+    //     is_behind = true;
+    //   }
+    // }
     if (!is_behind) {
       features_inI0.insert({feat.first, p_FinI0});
       count_valid_features++;
@@ -829,7 +830,7 @@ bool DynamicInitializer::initialize(double &timestamp, Eigen::MatrixXd &covarian
       // Get our ids and if the camera is a fisheye or not
       size_t feat_id = feat.first;
       size_t cam_id = camtime.first;
-      bool is_fisheye = (std::dynamic_pointer_cast<ov_core::CamEqui>(params.camera_intrinsics.at(cam_id)) != nullptr);
+      auto cam_used = params.camera_intrinsics.at(cam_id);
 
       // Loop through each observation
       for (size_t i = 0; i < camtime.second.size(); i++) {
@@ -862,7 +863,7 @@ bool DynamicInitializer::initialize(double &timestamp, Eigen::MatrixXd &covarian
         factor_params.push_back(ceres_vars_calib_cam2imu_ori.at(map_calib_cam2imu.at(cam_id)));
         factor_params.push_back(ceres_vars_calib_cam2imu_pos.at(map_calib_cam2imu.at(cam_id)));
         factor_params.push_back(ceres_vars_calib_cam_intrinsics.at(map_calib_cam.at(cam_id)));
-        auto *factor_pinhole = new Factor_ImageReprojCalib(uv_raw, params.sigma_pix, is_fisheye);
+        auto *factor_pinhole = new Factor_ImageReprojCalib(uv_raw, params.sigma_pix, cam_used);
         // ceres::LossFunction *loss_function = nullptr;
         ceres::LossFunction *loss_function = new ceres::CauchyLoss(1.0);
         problem.AddResidualBlock(factor_pinhole, loss_function, factor_params);

@@ -402,7 +402,7 @@ int main(int argc, char **argv) {
               problem.AddResidualBlock(factor_prior, nullptr, factor_params);
             }
           }
-          bool is_fisheye = (std::dynamic_pointer_cast<ov_core::CamEqui>(params.camera_intrinsics.at(cam_id)) != nullptr);
+          auto cam_used = params.camera_intrinsics.at(cam_id);
           if (map_calib_cam.find(cam_id) == map_calib_cam.end()) {
             auto *var_calib_cam = new double[8];
             for (int i = 0; i < 8; i++) {
@@ -465,7 +465,7 @@ int main(int argc, char **argv) {
             factor_params.push_back(ceres_vars_calib_cam2imu_ori.at(map_calib_cam2imu.at(cam_id)));
             factor_params.push_back(ceres_vars_calib_cam2imu_pos.at(map_calib_cam2imu.at(cam_id)));
             factor_params.push_back(ceres_vars_calib_cam_intrinsics.at(map_calib_cam.at(cam_id)));
-            auto *factor_pinhole = new Factor_ImageReprojCalib(uv_raw, params.sigma_pix, is_fisheye);
+            auto *factor_pinhole = new Factor_ImageReprojCalib(uv_raw, params.sigma_pix, cam_used);
             if (map_features_delayed.find(featid) != map_features_delayed.end()) {
               map_features_delayed.at(featid).push_back({factor_pinhole, factor_params});
             } else {
