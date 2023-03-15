@@ -355,7 +355,8 @@ bool DynamicInitializer::initialize(double &timestamp, Eigen::MatrixXd &covarian
         // [ 0 1 -v ]           [ 0 ]
         // where
         // p_FinCi = R_C0toCi * R_ItoC * (p_FinI0 - p_IiinI0) + p_IinC
-        //         = R_C0toCi * R_ItoC * (p_FinI0 - v_I0inI0 * dt - 0.5 * grav_inI0 * dt^2 - alpha) + p_IinC
+        //         = R_C0toCi * R_ItoC * (p_FinI0 - v_I0inI0 * dt + 0.5 * grav_inI0 * dt^2 - alpha) + p_IinC
+        // p_FinCi - p_IinC + R_C0toCi * R_ItoC * alpha = R_C0toCi * R_ItoC * (p_FinI0 - v_I0inI0 * dt + 0.5 * grav_inI0 * dt^2)
         Eigen::MatrixXd H_proj = Eigen::MatrixXd::Zero(2, 3);
         H_proj << uv_norm(2), 0, -uv_norm(0), 0, uv_norm(2), -uv_norm(1);
         Eigen::MatrixXd H = Eigen::MatrixXd::Zero(2, system_size);
