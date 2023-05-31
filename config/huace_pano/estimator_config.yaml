@@ -4,22 +4,22 @@ verbosity: "INFO" # ALL, DEBUG, INFO, WARNING, ERROR, SILENT
 
 use_fej: true # if we should use first-estimate Jacobians (enable for good consistency)
 use_imuavg: true # for our discrete integration, if we should average sequential IMU measurements to "smooth" it
-use_rk4int: true # if rk4 integration should be used (overrides imu averaging)
+use_rk4int: false # if rk4 integration should be used (overrides imu averaging)
 
 use_stereo: false # if we have more than 1 camera, if we should try to track stereo constraints
 max_cameras: 1
 
-calib_cam_extrinsics: true
+calib_cam_extrinsics: false
 calib_cam_intrinsics: false
-calib_cam_timeoffset: true
+calib_cam_timeoffset: false
 
-max_clones: 11
-max_slam: 50
-max_slam_in_update: 25
-max_msckf_in_update: 10
+max_clones: 30
+max_slam: 10
+max_slam_in_update: 10
+max_msckf_in_update: 50
 dt_slam_delay: 2
 
-gravity_mag: 9.795
+gravity_mag: 9.81
 
 feat_rep_msckf: "GLOBAL_3D"
 feat_rep_slam: "GLOBAL_3D"
@@ -27,24 +27,24 @@ feat_rep_aruco: "GLOBAL_3D"
 
 # zero velocity update parameters we can use
 # we support either IMU-based or disparity detection.
-try_zupt: true
+try_zupt: false
 zupt_chi2_multipler: 0 # set to 0 for only disp-based
 zupt_max_velocity: 0.01
 zupt_noise_multiplier: 1
-zupt_max_disparity: 2.5 # set to 0 for only imu-based
+zupt_max_disparity: 3 # set to 0 for only imu-based
 zupt_only_at_beginning: false
 
 # ==================================================================
 # ==================================================================
 
-init_window_time: 4.0
+init_window_time: 3.0
 init_imu_thresh: 1.0
-init_max_disparity: 15
+init_max_disparity: 6
 init_max_features: 80
 
 init_dyn_use: true # if dynamic initialization should be used
 init_dyn_mle_opt_calib: false # if we should optimize calibration during intialization (not recommended)
-init_dyn_mle_max_iter: 50 # how many iterations the MLE refinement should use (zero to skip the MLE)
+init_dyn_mle_max_iter: 0 # how many iterations the MLE refinement should use (zero to skip the MLE)
 init_dyn_mle_max_time: 0.5 # how many seconds the MLE should be completed in
 init_dyn_mle_max_threads: 6 # how many threads the MLE should use
 init_dyn_num_pose: 6 # number of poses to use within our window time (evenly spaced)
@@ -78,11 +78,11 @@ filepath_gt: "/tmp/ov_groundtruth.txt"
 use_klt: true
 num_pts: 300
 fast_threshold: 20
-grid_x: 20
-grid_y: 20
-min_px_dist: 10
+grid_x: 40
+grid_y: 40
+min_px_dist: 20
 knn_ratio: 0.70
-track_frequency: 30.0
+track_frequency: 21.0
 downsample_cameras: false
 num_opencv_threads: 4 # -1: auto, 0-1: serial, >1: number of threads
 histogram_method: "HISTOGRAM" # NONE, HISTOGRAM, CLAHE
@@ -97,16 +97,16 @@ downsize_aruco: true
 # ==================================================================
 
 # camera noises and chi-squared threshold multipliers
-up_msckf_sigma_px: 1
+up_msckf_sigma_px: 15
 up_msckf_chi2_multipler: 1
-up_slam_sigma_px: 1
+up_slam_sigma_px: 10
 up_slam_chi2_multipler: 1
 up_aruco_sigma_px: 1
 up_aruco_chi2_multipler: 1
 
 # masks for our images
 use_mask: true
-mask0: "mask.png" #relative to current file
+mask0: "mask1.png" #relative to current file
 
 # imu and camera spacial-temporal
 # imu config should also have the correct noise values
