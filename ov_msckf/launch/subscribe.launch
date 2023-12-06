@@ -2,7 +2,7 @@
 
     <!-- what config we are going to run (should match folder name) -->
     <arg name="verbosity"   default="DEBUG" /> <!-- ALL, DEBUG, INFO, WARNING, ERROR, SILENT -->
-    <arg name="config"      default="huace_pano" /> <!-- euroc_mav, tum_vi, rpng_aruco huace_pano-->
+    <arg name="config"      default="whu_pano" /> <!-- euroc_mav, tum_vi, rpng_aruco huace_pano-->
     <arg name="config_path" default="$(find ov_msckf)/../config/$(arg config)/estimator_config.yaml" />
 
     <!-- mono or stereo and what ros bag to play -->
@@ -12,7 +12,7 @@
     <arg name="bag_rate"    default="1" />
     <arg name="dataset"     default="V1_01_easy" /> <!-- V1_01_easy, V1_02_medium, V2_02_medium -->
     <arg name="dobag"       default="false" /> <!-- if we should play back the bag -->
-    <arg name="bag"         default="/home/gnss/wyp/test_project/ws_tools/src/trans2bag/bags/data_2023-02-24-17-35-06.bag" />
+    <!-- <arg name="bag"         default="/home/gnss/wyp/test_project/ws_tools/src/trans2bag/bags/data_2023-02-24-17-35-06.bag" /> -->
 <!--    <arg name="bag"         default="/home/patrick/datasets/$(arg config)/$(arg dataset).bag" />-->
 <!--    <arg name="bag"         default="/datasets/$(arg config)/$(arg dataset).bag" />-->
 
@@ -44,11 +44,13 @@
         <param name="record_timing_information"   type="bool"   value="$(arg dotime)" />
         <param name="record_timing_filepath"      type="string" value="$(arg path_time)" />
         <!-- feature init -->
-        <param name="fi_triangulate_1d"      type="bool"   value="true" />
-        <param name="fi_refine_features"     type="bool"   value="false" />
+        <param name="fi_triangulate_1d"      type="bool"   value="false" />
+        <param name="fi_refine_features"     type="bool"   value="true" />
         <param name="fi_refine_1d"           type="bool"   value="false" />
 
     </node>
+
+    <node pkg="image_transport" type="republish" name="republish" args="compressed in:=/theta_driver_node/image_raw raw out:=/theta_driver_node/image_raw" output="screen" respawn="true"/>
 
     <!-- play the dataset -->
     <group if="$(arg dobag)">

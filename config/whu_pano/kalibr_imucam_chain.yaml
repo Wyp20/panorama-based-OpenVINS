@@ -1,0 +1,21 @@
+%YAML:1.0
+
+cam0:
+  T_imu_cam: #rotation from camera to IMU R_CtoI, position of camera in IMU p_CinI
+    # - [0,0,1, 0.02]
+    # - [1,0,0, 0.03]
+    # - [0,1,0, -0.20]
+    # - [0.0, 0.0, 0.0, 1.0]
+    - [ -0.0168778   ,  0.0258527 ,        1.00026    ,   0.0117332]
+    - [ 1.00055      ,      -0.00876385 ,   0.0178809  , 0.0322926]
+    - [ 0.00997325   ,  1.00037       ,    -0.0249276  , -0.223233]
+    - [ -0           ,              0        ,                 -0         ,             1]
+  cam_overlaps: [1]
+  camera_model: pinhole
+  distortion_coeffs: [0, 0, 0, 0]
+  distortion_model: equirectangle
+  intrinsics: [0, 0, 0, 0] #fu, fv, cu, cv
+  resolution: [1920, 960]
+  rostopic: /theta_driver_node/image_raw
+  timeshift_cam_imu: 0.058
+
