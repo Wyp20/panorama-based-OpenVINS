@@ -12,6 +12,7 @@ max_cameras: 1
 calib_cam_extrinsics: true
 calib_cam_intrinsics: false
 calib_cam_timeoffset: true
+noise_whiting: true
 
 max_clones: 6
 max_slam: 60

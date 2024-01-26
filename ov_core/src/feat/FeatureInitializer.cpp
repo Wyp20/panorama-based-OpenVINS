@@ -580,10 +580,10 @@ bool FeatureInitializer::single_gaussnewton_xyz(std::shared_ptr<Feature> feat,
     double cost = compute_error_xyz(clonesCAM, feat, X + dx(0, 0), Y + dx(1, 0), Z + dx(2, 0));
 
     // Debug print
-    std::stringstream ss;
+    // std::stringstream ss;
     // ss << "run = " << runs << " | cost = " << dx.norm() << " | lamda = " << lam << " | depth = " << 1/rho << endl;
-    ss << "run = " << runs << " | cost = " << cost << " | |dx| = " << dx.norm() << " | lamda = " << lam << std::endl;
-    PRINT_DEBUG(ss.str().c_str());
+    // ss << "run = " << runs << " | cost = " << cost << " | |dx| = " << dx.norm() << " | lamda = " << lam << std::endl;
+    // PRINT_DEBUG(ss.str().c_str());
 
     // Check if converged
     if (cost <= cost_old && (cost_old - cost) / cost_old < _options.min_dcost)

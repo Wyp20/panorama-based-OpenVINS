@@ -346,7 +346,10 @@ void UpdaterHelper::get_feature_jacobian_full(std::shared_ptr<State> state, Upda
       // Our residual
       Eigen::Vector2d uv_m;
       uv_m << (double)feature.uvs[pair.first].at(m)(0), (double)feature.uvs[pair.first].at(m)(1);
+      // Noise scale
+      double s = state->_options.do_noise_whiting ? cos((uv_m(2) / 960 - 0.5) * M_PI) : 1.;
       res.block(2 * c, 0, 2, 1) = uv_m - uv_dist;
+      res.row(2 * c + 1) *= s;
 
       //=========================================================================
       //=========================================================================
@@ -389,6 +392,7 @@ void UpdaterHelper::get_feature_jacobian_full(std::shared_ptr<State> state, Upda
 
       // CHAINRULE: get the total feature Jacobian
       H_f.block(2 * c, 0, 2, H_f.cols()).noalias() = dz_dpfg * dpfg_dlambda;
+      H_f.row(2 * c + 1) *= s;
 
       // CHAINRULE: get state clone Jacobian
       H_x.block(2 * c, map_hx[clone_Ii], 2, clone_Ii->size()).noalias() = dz_dpfc * dpfc_dclone;
@@ -419,6 +423,7 @@ void UpdaterHelper::get_feature_jacobian_full(std::shared_ptr<State> state, Upda
         H_x.block(2 * c, map_hx[distortion], 2, distortion->size()) = dz_dzeta;
       }
 
+      H_x.row(2 * c + 1) *= s;
       // Move the Jacobian and residual index forward
       c++;
     }
